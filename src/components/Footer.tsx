@@ -2,15 +2,17 @@ import classNames from 'classnames';
 import { Todo } from '../types/Todo';
 import { FilterMethods } from '../types/Methods';
 import { handleDelete } from '../functions';
+import { SetStateAction } from 'react';
 
 interface FooterProps {
   checkCount: (todos: Todo[]) => number;
   setFilter: (string: FilterMethods) => void;
   todos: Todo[];
   filterMethod: FilterMethods;
-  renderTodos: (todos: Todo[]) => void;
-  setDeleting: (todo: Todo) => void;
-  newError: (value: string) => void;
+  renderTodos: React.Dispatch<SetStateAction<Todo[]>>;
+  setDeleting: React.Dispatch<React.SetStateAction<number[]>>;
+  newError: React.Dispatch<SetStateAction<string | null>>;
+  handleFocus: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -21,6 +23,7 @@ export const Footer: React.FC<FooterProps> = ({
   renderTodos,
   setDeleting,
   newError,
+  handleFocus,
 }) => {
   const clearCompleted = () => {
     todos.forEach(todo => {
@@ -28,6 +31,7 @@ export const Footer: React.FC<FooterProps> = ({
         handleDelete(todo, setDeleting, renderTodos, newError);
       }
     });
+    handleFocus();
   };
 
   return (
@@ -82,19 +86,19 @@ export const Footer: React.FC<FooterProps> = ({
       </nav>
 
       {/* this button should be disabled if there are no completed todos */}
-      {todos.some(el => el.completed === true) && (
-        <button
-          type="button"
-          className="todoapp__clear-completed"
-          data-cy="ClearCompletedButton"
-          onClick={e => {
-            e.preventDefault();
-            clearCompleted();
-          }}
-        >
-          Clear completed
-        </button>
-      )}
+
+      <button
+        disabled={todos.every(el => el.completed === false)}
+        type="button"
+        className="todoapp__clear-completed"
+        data-cy="ClearCompletedButton"
+        onClick={e => {
+          e.preventDefault();
+          clearCompleted();
+        }}
+      >
+        Clear completed
+      </button>
     </footer>
   );
 };

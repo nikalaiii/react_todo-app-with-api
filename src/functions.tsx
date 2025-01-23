@@ -1,4 +1,4 @@
-import { deleteTodo } from './api/todos';
+import { checkTodo, deleteTodo } from './api/todos';
 import { Todo } from './types/Todo';
 
 export const handleDelete = async (
@@ -18,6 +18,38 @@ export const handleDelete = async (
   }
 };
 
-export const handleFocus = () => {
-  inputRef.current?.focus();
-};
+export async function handleEdit(
+  editedTodo: Todo,
+  field: keyof Todo,
+  value: boolean | string,
+  setLoading: React.Dispatch<React.SetStateAction<number[]>>,
+  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>,
+  setEdit?: React.Dispatch<React.SetStateAction<number | null>>,
+) {
+  try {
+    setLoading(current => [...current, editedTodo.id]);
+
+    const editedValue = { [field]: value };
+    const response = await checkTodo({
+      id: editedTodo.id,
+      newValue: editedValue,
+    });
+
+    setTodos(current => {
+      const allTodos = [...current];
+      const index = allTodos.findIndex(todo => todo.id === editedTodo.id);
+
+      allTodos[index] = response;
+
+      return allTodos;
+    });
+  } catch {
+    setError('Unable to update a todo.');
+  } finally {
+    setLoading(prev => prev.filter(id => id !== editedTodo.id));
+    if (setEdit) {
+      setEdit(null);
+    }
+  }
+}

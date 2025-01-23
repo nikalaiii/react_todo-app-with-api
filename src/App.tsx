@@ -21,7 +21,8 @@ export const App: React.FC = () => {
     FilterMethods.All,
   );
   const [loadTodo, setLoadTodo] = useState<Todo | null>(null);
-  const [deleting, setDeleting] = useState<number[]>([]);
+  const [loadList, setLoadList] = useState<number[]>([]);
+  const [editing, setEditing] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFocus = () => {
@@ -106,7 +107,9 @@ export const App: React.FC = () => {
           changeFormValue={setFormValue}
           setloadTodo={setLoadTodo}
           inputRef={inputRef}
-          handeFocus={handleFocus}
+          handleFocus={handleFocus}
+          todos={todos}
+          isLoading={setLoadList}
         />
 
         <Main
@@ -114,9 +117,11 @@ export const App: React.FC = () => {
           tempTodo={loadTodo}
           newError={setError}
           renderTodos={setTodos}
-          setDeleting={setDeleting}
-          deleting={deleting}
+          setDeleting={setLoadList}
+          deleting={loadList}
           handleFocus={handleFocus}
+          editing={editing}
+          onEdit={setEditing}
         />
 
         {/* Hide the footer if there are no todos */}
@@ -127,8 +132,9 @@ export const App: React.FC = () => {
             todos={todos}
             filterMethod={filterMethod}
             renderTodos={setTodos}
-            setDeleting={setDeleting}
+            setDeleting={setLoadList}
             newError={setError}
+            handleFocus={handleFocus}
           />
         )}
       </div>

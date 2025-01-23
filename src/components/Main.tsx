@@ -1,16 +1,20 @@
-import { handleDelete } from '../functions';
+import { handleEdit, handleDelete } from '../functions';
 import { Todo } from '../types/Todo';
 import { TodoItem } from './TodoItem';
 import { TodoLoading } from './TodoLoading';
 
+import { SetStateAction, useRef } from 'react';
+
 interface MainProps {
   todos: Todo[];
-  renderTodos: (todos: Todo[]) => void;
+  renderTodos: React.Dispatch<SetStateAction<Todo[]>>;
   tempTodo: Todo | null;
-  newError: (message: string) => void;
-  setDeleting: (todo: Todo) => void;
+  newError: React.Dispatch<SetStateAction<string | null>>;
+  setDeleting: React.Dispatch<React.SetStateAction<number[]>>;
   deleting: number[];
   handleFocus: () => void;
+  editing: number | null;
+  onEdit: React.Dispatch<SetStateAction<number | null>>;
 }
 export const Main: React.FC<MainProps> = ({
   todos,
@@ -20,7 +24,11 @@ export const Main: React.FC<MainProps> = ({
   setDeleting,
   deleting,
   handleFocus,
+  editing,
+  onEdit,
 }) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   return (
     <section className="todoapp__main" data-cy="TodoList">
       {todos.map(todo => (
@@ -32,6 +40,30 @@ export const Main: React.FC<MainProps> = ({
           }
           isDeleting={deleting.includes(todo.id)}
           handleFocus={handleFocus}
+          onCheck={() =>
+            handleEdit(
+              todo,
+              'completed',
+              !todo.completed,
+              setDeleting,
+              renderTodos,
+              newError,
+            )
+          }
+          editing={editing}
+          onEdit={onEdit}
+          onInput={inputRef}
+          onSubmit={(currentTodo: Todo) =>
+            handleEdit(
+              currentTodo,
+              'title',
+              currentTodo.title,
+              setDeleting,
+              renderTodos,
+              newError,
+              onEdit,
+            )
+          }
         />
       ))}
       {tempTodo && <TodoLoading title={tempTodo.title} />}

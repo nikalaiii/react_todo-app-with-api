@@ -1,17 +1,21 @@
-import { RefObject, useState } from 'react';
+import { RefObject, SetStateAction, useState } from 'react';
 import { USER_ID } from '../api/todos';
 import { addTodo } from '../api/todos';
 import { Todo } from '../types/Todo';
 import { Form } from './Form';
+import { handleEdit } from '../functions';
+import classNames from 'classnames';
 
 interface HeaderProps {
-  onError: (message: string) => void;
+  onError: React.Dispatch<SetStateAction<string | null>>;
   onTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
   formValue: string;
   changeFormValue: (value: string) => void;
   setloadTodo: (value: Todo | null) => void;
   inputRef: RefObject<HTMLInputElement>;
   handleFocus: () => void;
+  todos: Todo[];
+  isLoading: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,6 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
   setloadTodo,
   inputRef,
   handleFocus,
+  todos,
+  isLoading,
 }) => {
   const [isDisabled, setDisabled] = useState(false);
 
@@ -58,13 +64,43 @@ export const Header: React.FC<HeaderProps> = ({
     }
   }
 
+  const handleToggleAll = async () => {
+    try {
+      const togglePromises = todos.map(todo =>
+        handleEdit(
+          todo,
+          'completed',
+          todos.some(el => !el.completed),
+          isLoading,
+          onTodos,
+          onError,
+        ),
+      );
+
+      await Promise.allSettled(togglePromises);
+    } catch {
+      onError('Unable to update todos');
+    }
+  };
+
   return (
-    <Form
-      onSubmit={handeSubmit}
-      fValue={formValue}
-      onChange={changeFormValue}
-      isDisabled={isDisabled}
-      inputRef={inputRef}
-    />
+    <header className="todoapp__header">
+      <button
+        type="button"
+        className={classNames('todoapp__toggle-all', {
+          active: todos.every(el => el.completed),
+        })}
+        data-cy="ToggleAllButton"
+        onClick={handleToggleAll}
+      />
+
+      <Form
+        onSubmit={handeSubmit}
+        fValue={formValue}
+        onChange={changeFormValue}
+        isDisabled={isDisabled}
+        inputRef={inputRef}
+      />
+    </header>
   );
 };
