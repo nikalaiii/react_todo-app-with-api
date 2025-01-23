@@ -14,7 +14,7 @@ import { getTodos, USER_ID } from './api/todos';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [error, setError] = useState<string | null>('');
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [formValue, setFormValue] = useState('');
   const [filterMethod, setFilterMethod] = useState<FilterMethods>(
