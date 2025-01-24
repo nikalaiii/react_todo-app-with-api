@@ -1,3 +1,4 @@
+import { trim } from 'cypress/types/lodash';
 import { checkTodo, deleteTodo } from './api/todos';
 import { Todo } from './types/Todo';
 
@@ -30,7 +31,9 @@ export async function handleEdit(
   try {
     setLoading(current => [...current, editedTodo.id]);
 
-    const editedValue = { [field]: value };
+    const editedValue = {
+      [field]: typeof value === 'string' ? value.trim() : value,
+    };
     const response = await checkTodo({
       id: editedTodo.id,
       newValue: editedValue,
@@ -44,12 +47,16 @@ export async function handleEdit(
 
       return allTodos;
     });
-  } catch {
-    setError('Unable to update a todo.');
-  } finally {
-    setLoading(prev => prev.filter(id => id !== editedTodo.id));
+
     if (setEdit) {
       setEdit(null);
     }
+  } catch (err) {
+    setError('Unable to update a todo');
+    if (setEdit) {
+      setEdit(editedTodo.id);
+    }
+  } finally {
+    setLoading(prev => prev.filter(id => id !== editedTodo.id));
   }
 }

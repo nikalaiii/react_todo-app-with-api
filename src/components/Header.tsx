@@ -66,7 +66,13 @@ export const Header: React.FC<HeaderProps> = ({
 
   const handleToggleAll = async () => {
     try {
-      const togglePromises = todos.map(todo =>
+      let toggleTodos = [...todos];
+
+      if (toggleTodos.some(el => !el.completed)) {
+        toggleTodos = todos.filter(el => !el.completed);
+      }
+
+      const togglePromises = toggleTodos.map(todo =>
         handleEdit(
           todo,
           'completed',
@@ -79,20 +85,22 @@ export const Header: React.FC<HeaderProps> = ({
 
       await Promise.allSettled(togglePromises);
     } catch {
-      onError('Unable to update todos');
+      onError('Unable to update a todo');
     }
   };
 
   return (
     <header className="todoapp__header">
-      <button
-        type="button"
-        className={classNames('todoapp__toggle-all', {
-          active: todos.every(el => el.completed),
-        })}
-        data-cy="ToggleAllButton"
-        onClick={handleToggleAll}
-      />
+      {todos.length > 0 && (
+        <button
+          type="button"
+          className={classNames('todoapp__toggle-all', {
+            active: todos.every(el => el.completed),
+          })}
+          data-cy="ToggleAllButton"
+          onClick={handleToggleAll}
+        />
+      )}
 
       <Form
         onSubmit={handeSubmit}

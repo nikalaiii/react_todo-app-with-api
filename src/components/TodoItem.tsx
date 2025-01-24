@@ -24,16 +24,48 @@ export const TodoItem: React.FC<Props> = ({
   onEdit,
   onSubmit,
 }) => {
-  const handleDeleteAndFocus = () => {
+  const [title, setTitle] = useState<string>(todo.title);
+
+  const handleDeleteAndFocus = async () => {
     onDelete();
     handleFocus();
   };
 
-  const [title, setTitle] = useState<string>('');
+  const handleValidSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      if (title.length === 0) {
+        handleDeleteAndFocus();
+
+        return;
+      }
+
+      if (title === todo.title) {
+        onEdit(null);
+
+        return;
+      }
+
+      await onSubmit({ ...todo, title });
+      onEdit(null);
+    } catch (error) {
+      onEdit(todo.id);
+      console.error('Error during submission:', error); // Мінімальна обробка
+    }
+  };
 
   useEffect(() => {
-    setTitle(todo.title);
-  }, [todo.title]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onEdit(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => document.addEventListener('keydown', handleKeyDown);
+  }, [onEdit]);
 
   return (
     <div
@@ -42,7 +74,6 @@ export const TodoItem: React.FC<Props> = ({
       className={classNames('todo', { completed: todo.completed })}
       key={todo.id}
     >
-      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
       <label className="todo__status-label" htmlFor={`todo-status-${todo.id}`}>
         <input
           data-cy="TodoStatus"
@@ -50,18 +81,14 @@ export const TodoItem: React.FC<Props> = ({
           className="todo__status"
           id={`todo-status-${todo.id}`}
           checked={todo.completed}
-          onClick={() => onCheck()}
+          onClick={onCheck}
         />
       </label>
 
       {editing === todo.id ? (
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            onSubmit({ ...todo, title });
-          }}
-        >
+        <form onSubmit={handleValidSubmit}>
           <input
+            onBlur={() => onEdit(null)} // Вихід з редагування при втраті фокусу
             autoFocus
             data-cy="TodoTitleField"
             type="text"
@@ -80,9 +107,7 @@ export const TodoItem: React.FC<Props> = ({
             type="button"
             className="todo__remove"
             data-cy="TodoDelete"
-            onClick={() => {
-              handleDeleteAndFocus();
-            }}
+            onClick={handleDeleteAndFocus}
           >
             ×
           </button>
