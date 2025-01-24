@@ -1,4 +1,3 @@
-import { trim } from 'cypress/types/lodash';
 import { checkTodo, deleteTodo } from './api/todos';
 import { Todo } from './types/Todo';
 

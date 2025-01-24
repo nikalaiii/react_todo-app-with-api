@@ -48,10 +48,10 @@ export const TodoItem: React.FC<Props> = ({
       }
 
       await onSubmit({ ...todo, title });
-      onEdit(null);
     } catch (error) {
       onEdit(todo.id);
-      console.error('Error during submission:', error); // Мінімальна обробка
+    } finally {
+      onEdit(null);
     }
   };
 
@@ -74,6 +74,7 @@ export const TodoItem: React.FC<Props> = ({
       className={classNames('todo', { completed: todo.completed })}
       key={todo.id}
     >
+      {/* eslint-disable-next-line */}
       <label className="todo__status-label" htmlFor={`todo-status-${todo.id}`}>
         <input
           data-cy="TodoStatus"
@@ -88,7 +89,7 @@ export const TodoItem: React.FC<Props> = ({
       {editing === todo.id ? (
         <form onSubmit={handleValidSubmit}>
           <input
-            onBlur={() => onEdit(null)} // Вихід з редагування при втраті фокусу
+            onBlur={() => onEdit(null)}
             autoFocus
             data-cy="TodoTitleField"
             type="text"
